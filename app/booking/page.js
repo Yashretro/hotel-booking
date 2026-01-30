@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from 'next/navigation';
 
-export default function BookingForm() {
+function BookingFormContent() {
   const searchParams = useSearchParams();
   const hotelId = searchParams.get('hotel');
   const roomId = searchParams.get("room");
@@ -97,5 +97,13 @@ export default function BookingForm() {
         </button>
       </form>
     </div>
+  );
+}
+
+export default function BookingForm() {
+  return (
+    <Suspense fallback={<div style={{ padding: '20px', textAlign: 'center' }}>Loading...</div>}>
+      <BookingFormContent />
+    </Suspense>
   );
 }
