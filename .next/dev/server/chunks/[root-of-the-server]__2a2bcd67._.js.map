@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 40, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/91811/Documents/New%20folder/hotel-booking/app/api/bookings/route.js"],"sourcesContent":["let bookings = [];\r\n\r\nexport async function POST(req) {\r\n\r\n  const body = await req.json();\r\n  \r\n  const booking = {\r\n    id: bookings.length + 1,\r\n    hotelId: body.hotelId,\r\n    roomId: body.roomId,\r\n    name: body.name,\r\n    email: body.email,\r\n    checkIn: body.checkIn,\r\n    checkOut: body.checkOut,\r\n    guests: body.guests,\r\n    totalPrice: body.totalPrice,\r\n    createdAt: new Date().toLocaleString(),\r\n    \r\n  };\r\n\r\n  bookings.push(booking);\r\n  return Response.json({ success: true, booking });\r\n}\r\n\r\nexport async function GET() {\r\n  return Response.json({ bookings });\r\n}\r\n"],"names":[],"mappings":";;;;;;AAAA,IAAI,WAAW,EAAE;AAEV,eAAe,KAAK,GAAG;IAE5B,MAAM,OAAO,MAAM,IAAI,IAAI;IAE3B,MAAM,UAAU;QACd,IAAI,SAAS,MAAM,GAAG;QACtB,SAAS,KAAK,OAAO;QACrB,QAAQ,KAAK,MAAM;QACnB,MAAM,KAAK,IAAI;QACf,OAAO,KAAK,KAAK;QACjB,SAAS,KAAK,OAAO;QACrB,UAAU,KAAK,QAAQ;QACvB,QAAQ,KAAK,MAAM;QACnB,YAAY,KAAK,UAAU;QAC3B,WAAW,IAAI,OAAO,cAAc;IAEtC;IAEA,SAAS,IAAI,CAAC;IACd,OAAO,SAAS,IAAI,CAAC;QAAE,SAAS;QAAM;IAAQ;AAChD;AAEO,eAAe;IACpB,OAAO,SAAS,IAAI,CAAC;QAAE;IAAS;AAClC"}}]
+}
