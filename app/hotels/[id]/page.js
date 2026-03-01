@@ -1,21 +1,61 @@
-export default async function HotelDetails({ params }) {
-  const hotelId = (await params).id;
-  
-  const hotelNames = { 1: "Yash Hotels", 2: 'Adil Hotels', 3: "Gomti Inn", 4: 'Chacha Hotels' };
-  const roomsList = [{ id: 1, type: "Single", price: 800 }, { id: 2, type: 'Double', price: 1200 }, { id: 3, type: "Family", price: 2000 }]
+'use client';
+
+import { useState, useEffect } from 'react';
+
+export default function HotelDetails({ params }) {
+  const [hotelId, setHotelId] = useState(null);
+  const [hotel, setHotel] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    params.then(p => setHotelId(p.id));
+  }, [params]);
+
+  useEffect(() => {
+    if (!hotelId) return;
+    
+    fetch('/api/hotels')
+      .then(res => res.json())
+      .then(data => {
+        const foundHotel = data.hotels?.find(h => h.hotelId === hotelId);
+        setHotel(foundHotel);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, [hotelId]);
+
+  if (loading || !hotel) {
+    return <div style={{ fontFamily: "Arial, sans-serif", padding: '20px' }}>Loading...</div>;
+  }
 
   return (
     <div style={{ fontFamily: "Arial, sans-serif", padding: '20px', maxWidth: '800px', margin: '0 auto' }}>
       <a href='/' style={{ color: "#2563eb" }}>← Back</a>
-      <h1>{hotelNames[hotelId]}</h1>
+      <h1>{hotel.name}</h1>
+      <p style={{ color: '#666', fontSize: '16px' }}>{hotel.location}</p>
+      <p style={{ margin: '15px 0' }}>{hotel.description}</p>
+      
       <h2 style={{marginTop: '25px'}}>Available Rooms</h2>
-      {roomsList.map((room) => (
-        <div key={room.id} style={{ border: "1px solid #ddd", padding: '15px',marginBottom:'10px', display: 'flex', justifyContent: "space-between" }}>
+      {hotel.rooms?.map((room) => (
+        <div key={room.roomId} style={{ border: "1px solid #ddd", padding: '15px',marginBottom:'10px', display: 'flex', justifyContent: "space-between", alignItems: 'center' }}>
           <div>
             <h3 style={{margin: 0}}>{room.type}</h3>
             <p style={{ color: "#2563eb", fontWeight: 'bold', margin: '5px 0' }}>₹{room.price}/night</p>
+            {!room.available && <span style={{color: '#dc2626', fontSize: '14px'}}>Not Available</span>}
           </div>
-          <a href={'/booking?hotel=' + hotelId + '&room=' + room.id} style={{ padding: "10px 20px", backgroundColor: '#2563eb', color: 'white', textDecoration: "none", borderRadius: '3px' }}>Book</a>
+          <a 
+            href={'/booking?hotel=' + hotelId + '&room=' + room.roomId} 
+            style={{ 
+              padding: "10px 20px", 
+              backgroundColor: room.available ? '#2563eb' : '#ccc', 
+              color: 'white', 
+              textDecoration: "none", 
+              borderRadius: '3px',
+              pointerEvents: room.available ? 'auto' : 'none'
+            }}
+          >
+            Book
+          </a>
         </div>
       ))}
     </div>
