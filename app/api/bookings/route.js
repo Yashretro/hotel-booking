@@ -1,6 +1,9 @@
 import connectDB from '../../../lib/mongodb';
 import Booking from '../../../models/Booking';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function POST(req) {
   try {
     await connectDB();

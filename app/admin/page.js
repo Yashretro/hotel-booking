@@ -7,7 +7,7 @@ export default function AdminPage() {
   const [hotels, setHotels] = useState({});
 
   useEffect(() => {
-    fetch('/api/hotels')
+    fetch('/api/hotels', { cache: 'no-store' })
       .then(r => r.json())
       .then(d => {
         const hotelMap = {};
@@ -17,7 +17,7 @@ export default function AdminPage() {
         setHotels(hotelMap);
       });
 
-    fetch('/api/bookings')
+    fetch('/api/bookings', { cache: 'no-store' })
       .then(r => r.json())
       .then(d => setBookingData(d.bookings || []));
   }, []);
