@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from "react";
+import { useState, Suspense, useEffect } from "react";
 import { useSearchParams } from 'next/navigation';
 
 function BookingFormContent() {
@@ -11,9 +11,37 @@ function BookingFormContent() {
   const [formData, setFormData] = useState({ checkIn: '', checkOut: '', guests: 1, name: '', email: '' });
   const [err, setErr] = useState("");
   const [loading, setLoading] = useState(false);
+  const [bookings, setBookings] = useState([]);
+  const [hotels, setHotels] = useState({});
 
   const hotelNames = { 1: "Yash Hotels", 2: 'Adil Hotels', 3: "Gomti Inn", 4: 'Chacha Hotels' }
   const roomTypes = { 1: { type: "Single", price: 800 }, 2: { type: 'Double', price: 1200 }, 3: { type: "Family", price: 2000 } };
+
+  useEffect(() => {
+    const loadBookings = async () => {
+      try {
+        const [hotelsRes, bookingsRes] = await Promise.all([
+          fetch('/api/hotels', { cache: 'no-store' }),
+          fetch('/api/bookings', { cache: 'no-store' })
+        ]);
+        
+        const hotelsData = await hotelsRes.json();
+        const bookingsData = await bookingsRes.json();
+        
+        const hotelMap = {};
+        hotelsData.hotels?.forEach(h => {
+          hotelMap[h.hotelId] = h;
+        });
+        
+        setHotels(hotelMap);
+        setBookings(bookingsData.bookings || []);
+      } catch (error) {
+        console.error('Error loading bookings:', error);
+      }
+    };
+    
+    loadBookings();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -48,13 +76,24 @@ function BookingFormContent() {
         return;
       }
 
-      alert('Booking confirmed! View at /admin');
+      alert('Booking confirmed!');
       setFormData({ checkIn: '', checkOut: '', guests: 1, name: '', email: '' });
+      
+      const bookingsRes = await fetch('/api/bookings', { cache: 'no-store' });
+      const bookingsData = await bookingsRes.json();
+      setBookings(bookingsData.bookings || []);
     } catch (err) {
       setErr("Error saving booking");
     } finally {
       setLoading(false)
     }
+  };
+
+  const getHotelName = (hotelId) => hotels[hotelId]?.name || 'Hotel ' + hotelId;
+  const getRoomType = (hotelId, roomId) => {
+    const hotel = hotels[hotelId];
+    const room = hotel?.rooms?.find(r => r.roomId === roomId);
+    return room?.type || 'Room ' + roomId;
   };
 
   const selectedRoom = roomTypes[roomId];
@@ -93,6 +132,34 @@ function BookingFormContent() {
           <input type='text' name='name' value={formData.name} onChange={handleChange} placeholder="Your name" style={{ width: '100%', padding: '8px', marginTop: '5px', borderRadius: '3px', border: '1px solid #ddd' }} />
         </div>
 
+
+      {bookings.length > 0 && (
+        <div style={{ marginTop: '40px' }}>
+          <h2>All Bookings</h2>
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: '20px' }}>
+            <thead>
+              <tr style={{ background: '#f5f5f5', borderBottom: '2px solid #ddd' }}>
+                <th style={{ padding: '10px', textAlign: 'left' }}>Guest</th>
+                <th style={{ textAlign: 'left' }}>Hotel</th>
+                <th style={{ textAlign: 'left' }}>Room</th>
+                <th style={{ textAlign: 'left' }}>Dates</th>
+                <th style={{ textAlign: 'left' }}>Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bookings.map((b) => (
+                <tr key={b._id} style={{ borderBottom: '1px solid #ddd' }}>
+                  <td style={{ padding: '10px' }}>{b.name}</td>
+                  <td>{getHotelName(b.hotelId)}</td>
+                  <td>{getRoomType(b.hotelId, b.roomId)}</td>
+                  <td>{b.checkIn} → {b.checkOut}</td>
+                  <td style={{ fontWeight: 'bold', color: '#2563eb' }}>₹{b.totalPrice}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
         <div style={{ marginBottom: '15px' }}>
           <label style={{ fontWeight: 'bold' }}>Email *</label>
           <input type="email" name='email' value={formData.email} onChange={handleChange} placeholder='Your email' style={{ width: '100%', padding: '8px', marginTop: '5px', borderRadius: '3px', border: '1px solid #ddd' }} />
