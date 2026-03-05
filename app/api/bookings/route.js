@@ -6,8 +6,14 @@ export const revalidate = 0;
 
 export async function POST(req) {
   try {
+    console.log('[BOOKING API] POST request received');
+    console.log('[BOOKING API] MONGODB_URI exists:', !!process.env.MONGODB_URI);
+    
     await connectDB();
+    console.log('[BOOKING API] Connected to MongoDB');
+    
     const body = await req.json();
+    console.log('[BOOKING API] Request body:', { hotelId: body.hotelId, name: body.name, email: body.email });
     
     const booking = await Booking.create({
       hotelId: body.hotelId,
@@ -20,8 +26,11 @@ export async function POST(req) {
       totalPrice: body.totalPrice
     });
 
+    console.log('[BOOKING API] Booking created successfully:', booking._id);
     return Response.json({ success: true, booking });
   } catch (error) {
+    console.error('[BOOKING API] ERROR:', error.message);
+    console.error('[BOOKING API] Stack:', error.stack);
     return Response.json({ success: false, error: error.message }, { status: 500 });
   }
 }
