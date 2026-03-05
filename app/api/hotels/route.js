@@ -1,6 +1,9 @@
 import connectDB from '../../../lib/mongodb';
 import Hotel from '../../../models/Hotel';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const initialHotels = [
   {
     hotelId: '1',
