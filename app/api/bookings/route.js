@@ -6,14 +6,16 @@ export const revalidate = 0;
 
 export async function POST(req) {
   try {
-    console.log('[BOOKING API] POST request received');
-    console.log('[BOOKING API] MONGODB_URI exists:', !!process.env.MONGODB_URI);
+    const timestamp = new Date().toISOString();
+    console.log(`[${timestamp}] [BOOKING API] POST request received`);
+    console.log(`[${timestamp}] [BOOKING API] MONGODB_URI exists:`, !!process.env.MONGODB_URI);
+    console.log(`[${timestamp}] [BOOKING API] URI length:`, process.env.MONGODB_URI?.length || 0);
     
     await connectDB();
-    console.log('[BOOKING API] Connected to MongoDB');
+    console.log(`[${timestamp}] [BOOKING API] Connected to MongoDB successfully`);
     
     const body = await req.json();
-    console.log('[BOOKING API] Request body:', { hotelId: body.hotelId, name: body.name, email: body.email });
+    console.log(`[${timestamp}] [BOOKING API] Request body parsed:`, { hotelId: body.hotelId, name: body.name, email: body.email });
     
     const booking = await Booking.create({
       hotelId: body.hotelId,
@@ -26,12 +28,14 @@ export async function POST(req) {
       totalPrice: body.totalPrice
     });
 
-    console.log('[BOOKING API] Booking created successfully:', booking._id);
+    console.log(`[${timestamp}] [BOOKING API] Booking created successfully with ID:`, booking._id);
     return Response.json({ success: true, booking });
   } catch (error) {
-    console.error('[BOOKING API] ERROR:', error.message);
-    console.error('[BOOKING API] Stack:', error.stack);
-    return Response.json({ success: false, error: error.message }, { status: 500 });
+    const timestamp = new Date().toISOString();
+    console.error(`[${timestamp}] [BOOKING API] ERROR:`, error.message);
+    console.error(`[${timestamp}] [BOOKING API] Error type:`, error.constructor.name);
+    console.error(`[${timestamp}] [BOOKING API] Stack:`, error.stack);
+    return Response.json({ success: false, error: error.message, type: error.constructor.name }, { status: 500 });
   }
 }
 
