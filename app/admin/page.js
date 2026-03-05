@@ -5,21 +5,43 @@ import { useEffect, useState } from "react"
 export default function AdminPage() {
   const [bookingData, setBookingData] = useState([])
   const [hotels, setHotels] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch('/api/hotels', { cache: 'no-store' })
-      .then(r => r.json())
-      .then(d => {
+    const loadData = async () => {
+      try {
+        const [hotelsRes, bookingsRes] = await Promise.all([
+          fetch('/api/hotels', { cache: 'no-store' }),
+          fetch('/api/bookings', { cache: 'no-store' })
+        ]);
+
+        const hotelsData = await hotelsRes.json();
+        const bookingsData = await bookingsRes.json();
+
+        if (!hotelsRes.ok || hotelsData.success === false) {
+          throw new Error(hotelsData.error || 'Failed to load hotels');
+        }
+
+        if (!bookingsRes.ok || bookingsData.success === false) {
+          throw new Error(bookingsData.error || 'Failed to load bookings');
+        }
+
         const hotelMap = {};
-        d.hotels?.forEach(h => {
+        hotelsData.hotels?.forEach(h => {
           hotelMap[h.hotelId] = h;
         });
-        setHotels(hotelMap);
-      });
 
-    fetch('/api/bookings', { cache: 'no-store' })
-      .then(r => r.json())
-      .then(d => setBookingData(d.bookings || []));
+        setHotels(hotelMap);
+        setBookingData(bookingsData.bookings || []);
+      } catch (err) {
+        setError(err.message || 'Unable to load admin data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
   }, []);
 
   const getHotelName = (hotelId) => hotels[hotelId]?.name || 'Hotel ' + hotelId;
@@ -33,7 +55,11 @@ export default function AdminPage() {
     <div style={{ fontFamily: "Arial, sans-serif", padding: '20px' }}>
       <a href='/' style={{ color: "#2563eb" }}>← Home</a>
       <h1>All Bookings</h1>
-      {bookingData.length === 0 ? (
+      {loading ? (
+        <p>Loading...</p>
+      ) : error ? (
+        <p style={{ color: '#dc2626' }}>{error}</p>
+      ) : bookingData.length === 0 ? (
         <p>No bookings yet</p>
       ) : (
         <table style={{ width: '100%', borderCollapse: 'collapse',marginTop: '20px' }}>
