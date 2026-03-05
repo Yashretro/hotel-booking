@@ -1,8 +1,0 @@
-{
-  "/admin/page": "app/admin/page.js",
-  "/api/bookings/route": "app/api/bookings/route.js",
-  "/api/hotels/route": "app/api/hotels/route.js",
-  "/booking/page": "app/booking/page.js",
-  "/hotels/[id]/page": "app/hotels/[id]/page.js",
-  "/page": "app/page.js"
-}
