@@ -35,18 +35,26 @@ function BookingFormContent() {
     const totalPrice = nights * roomTypes[roomId].price;
 
     try {
-      await fetch('/api/bookings', {
+      const response = await fetch('/api/bookings', {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ hotelId, roomId, ...formData, totalPrice }),
       });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        setErr(data.error || 'Booking failed. Please try again.');
+        return;
+      }
+
       alert('Booking confirmed! View at /admin');
       setFormData({ checkIn: '', checkOut: '', guests: 1, name: '', email: '' });
     } catch (err) {
       setErr("Error saving booking");
+    } finally {
+      setLoading(false)
     }
-    
-    setLoading(false)
   };
 
   const selectedRoom = roomTypes[roomId];
